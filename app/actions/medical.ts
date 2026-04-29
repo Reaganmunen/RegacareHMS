@@ -1,57 +1,54 @@
-"use server"
+"use server";
 
-import { DiagnosisFormValues } from "@/components/dialogs/add-diagnosis"
-import db from "@/lib/db"
-import { DiagnosisSchema, PatientBillSchema, PaymentSchema } from "@/lib/schema"
-import { checkRole } from "@/utils/roles"
+import { DiagnosisFormValues } from "@/components/dialogs/add-diagnosis";
+import db from "@/lib/db";
+import {
+  DiagnosisSchema,
+  PatientBillSchema,
+  PaymentSchema,
+} from "@/lib/schema";
+import { checkRole } from "@/utils/roles";
+import { revalidatePath } from "next/cache";
 
-export const addDiagnosis = async (data: DiagnosisFormValues, appointmentId: number) => {
+export const addDiagnosis = async (
+  data: DiagnosisFormValues,
+  appointmentId: string
+) => {
   try {
+    const validatedData = DiagnosisSchema.parse(data);
 
-    const validatedData = DiagnosisSchema.parse(data)
+    let medicalRecord = null;
 
-    // 1️⃣ Check if medical record already exists for this appointment
-    let medicalRecord = await db.medicalRecords.findFirst({
-      where: {
-        appointment_id: Number(appointmentId)
-      }
-    })
-
-    // 2️⃣ If not, create one
-    if (!medicalRecord) {
+    if (!validatedData.medical_id) {
       medicalRecord = await db.medicalRecords.create({
         data: {
           patient_id: validatedData.patient_id,
           doctor_id: validatedData.doctor_id,
           appointment_id: Number(appointmentId),
-        }
-      })
+        },
+      });
     }
 
-    // 3️⃣ Now create diagnosis linked to that record
+    const med_id = validatedData.medical_id || medicalRecord?.id;
     await db.diagnosis.create({
       data: {
-        patient_id: validatedData.patient_id,
-        doctor_id: validatedData.doctor_id,
-        medical_id: medicalRecord.id,
-        symptoms: validatedData.symptoms,
-        diagnosis: validatedData.diagnosis,
-        notes: validatedData.notes,
-        prescribed_medications: validatedData.prescribed_medications,
-        follow_up_plan: validatedData.follow_up_plan,
-      }
-    })
+        ...validatedData,
+        medical_id: Number(med_id),
+      },
+    });
 
     return {
+      success: true,
       message: "Diagnosis added successfully",
-      success: true
-    }
-
+      status: 201,
+    };
   } catch (error) {
-    console.log(error)
-    return { error: "Failed to add diagnosis" }
+    console.log(error);
+    return {
+      error: "Failed to add diagnosis",
+    };
   }
-}
+};
 
 export async function addNewBill(data: any) {
   try {
@@ -66,7 +63,6 @@ export async function addNewBill(data: any) {
     }
 
     const isValidData = PatientBillSchema.safeParse(data);
-
     const validatedData = isValidData.data;
     let bill_info = null;
 
@@ -130,33 +126,49 @@ export async function addNewBill(data: any) {
 export async function generateBill(data: any) {
   try {
     const isValidData = PaymentSchema.safeParse(data);
-
     const validatedData = isValidData.data;
 
     const discountAmount =
       (Number(validatedData?.discount) / 100) *
       Number(validatedData?.total_amount);
 
-    const res = await db.payment.update({
-      data: {
+    const appointmentId = Number(validatedData?.id);
+
+    const appointment = await db.appointment.findUnique({
+      where: { id: appointmentId },
+      select: { patient_id: true },
+    });
+
+    if (!appointment) {
+      return { success: false, msg: "Appointment not found" };
+    }
+
+    const res = await db.payment.upsert({
+      where: { appointment_id: appointmentId },
+      update: {
         bill_date: validatedData?.bill_date,
         discount: discountAmount,
-        total_amount: Number(validatedData?.total_amount)!,
+        total_amount: Number(validatedData?.total_amount),
       },
-      where: { id: Number(validatedData?.id) },
+      create: {
+        appointment_id: appointmentId,
+        patient_id: appointment.patient_id,
+        bill_date: validatedData?.bill_date ?? new Date(),
+        payment_date: new Date(),
+        discount: discountAmount,
+        total_amount: Number(validatedData?.total_amount),
+        amount_paid: 0.0,
+      },
     });
 
     await db.appointment.update({
-      data: {
-        status: "Completed",
-      },
+      data: { status: "Completed" },
       where: { id: res.appointment_id },
     });
-    return {
-      success: true,
-      error: false,
-      msg: `Bill generated successfully`,
-    };
+
+    revalidatePath(`/record/appointments/${appointmentId}`);
+
+    return { success: true, error: false, msg: "Bill generated successfully" };
   } catch (error) {
     console.log(error);
     return { success: false, msg: "Internal Server Error" };

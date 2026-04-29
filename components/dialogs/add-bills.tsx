@@ -38,12 +38,12 @@ export const AddBills = ({ id, appId, servicesData }: DataProps) => {
     resolver: zodResolver(PatientBillSchema),
     defaultValues: {
       bill_id: String(id),
-      service_id: "",
+      service_id: undefined,
       service_date: new Date().toDateString(),
       appointment_id: String(appId),
-      quantity: "",
-      unit_cost: "",
-      total_cost: "",
+      quantity: undefined,
+      unit_cost: undefined,
+      total_cost: undefined,
     },
   });
 

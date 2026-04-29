@@ -23,7 +23,15 @@ interface BloodPressureChartProps {
 }
 
 const BloodPressureChart = ({ data, average }: BloodPressureChartProps) => {
+ 
+
   const lastData = data[data.length - 1];
+
+  
+
+  // Prevent NaN
+  const systolic = Number(lastData?.systolic) || 0;
+  const diastolic = Number(lastData?.diastolic) || 0;
 
   return (
     <Card className="shadow-none col-span-2">
@@ -35,17 +43,23 @@ const BloodPressureChart = ({ data, average }: BloodPressureChartProps) => {
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-lg xl:text-xl font-semibold">
-              {lastData?.systolic || 0}/ {lastData?.diastolic || 0} mg/dL
+              {systolic} / {diastolic} mmHg
             </p>
-            <p className="text-sm text-muted-foreground">Recent Reading</p>
+            <p className="text-sm text-muted-foreground">
+              Recent Reading
+            </p>
           </div>
 
           <div>
-            <p className="text-lg xl:text-xl font-semibold">{average}</p>
-            <p className="text-sm text-muted-foreground">7 Days Average</p>
+            <p className="text-lg xl:text-xl font-semibold">
+              {average}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              7 Days Average
+            </p>
           </div>
 
-          <Button variant={"outline"} size={"sm"}>
+          <Button variant="outline" size="sm">
             See Insight
           </Button>
         </div>
@@ -57,7 +71,9 @@ const BloodPressureChart = ({ data, average }: BloodPressureChartProps) => {
               vertical={false}
               stroke="#ddd"
             />
+
             <XAxis dataKey="label" axisLine={false} tickLine={false} />
+
             <YAxis
               axisLine={false}
               tick={{ fill: "#9ca3af" }}
@@ -65,7 +81,10 @@ const BloodPressureChart = ({ data, average }: BloodPressureChartProps) => {
             />
 
             <Tooltip
-              contentStyle={{ borderRadius: "10px", borderColor: "#fff" }}
+              contentStyle={{
+                borderRadius: "10px",
+                borderColor: "#fff",
+              }}
             />
 
             <Legend
@@ -84,6 +103,7 @@ const BloodPressureChart = ({ data, average }: BloodPressureChartProps) => {
               legendType="circle"
               radius={[10, 10, 0, 0]}
             />
+
             <Bar
               dataKey="diastolic"
               fill="#2563eb"

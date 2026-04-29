@@ -1,55 +1,63 @@
 "use server"
 
-
 import db from "@/lib/db";
 import { ReviewFormValues, reviewSchema } from "@/lib/schema";
 import { clerkClient } from "@clerk/nextjs/server";
-import { success } from "zod";
+import { revalidatePath } from "next/cache";
 
-export async function deleteDataById(id:string,
-    deleteType:"doctor" | "staff" |"patient"|"payment"|"bill"
-){
-    try {
-        switch(deleteType){
-            case "doctor": await db.doctor.delete({where:{id: id}})
-            case "staff": await db.staff.delete({where:{id: id}})
-            case "patient": await db.patient.delete({where:{id: id}})
-             case "payment": await db.payment.delete({where:{id: Number(id)}})
-        }
-
-
-        if(deleteType==="staff"|| deleteType==="patient"|| deleteType==="doctor"){
-           const client = await clerkClient();
-            await client.users.deleteUser(id);
-        }
-        return{
-            success:true,
-            message:"Record deleted successfully",
-            status:200,
-        }
-
-        
-    } catch (error) {
-        console.log(error);
-
-        return{
-            success:false,
-            message:"Internal Server Error",
-            status:500,
-
-        }
-        
+export async function deleteDataById(
+  id: string,
+  deleteType: "doctor" | "staff" | "patient" | "payment" | "bill"
+) {
+  try {
+    switch (deleteType) {
+      case "doctor":
+        await db.doctor.delete({ where: { id } });
+        break;
+      case "staff":
+        await db.staff.delete({ where: { id } });
+        break;
+      case "patient":
+        await db.patient.delete({ where: { id } });
+        break;
+      case "payment":
+        await db.payment.delete({ where: { id: Number(id) } });
+        break;
+      case "bill":
+        await db.patientBills.delete({ where: { id: Number(id) } });
+        break;
     }
+
+    if (
+      deleteType === "staff" ||
+      deleteType === "patient" ||
+      deleteType === "doctor"
+    ) {
+      const client = await clerkClient();
+      await client.users.deleteUser(id);
+    }
+
+    revalidatePath("/", "layout"); // revalidates all pages
+
+    return {
+      success: true,
+      message: "Record deleted successfully",
+      status: 200,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Internal Server Error",
+      status: 500,
+    };
+  }
 }
-
-
 
 export async function createReview(values: ReviewFormValues) {
   try {
-    // Validate incoming data
     const validatedFields = reviewSchema.parse(values);
 
-    // Check if the patient exists
     const patient = await db.patient.findUnique({
       where: { id: validatedFields.patient_id },
     });
@@ -62,7 +70,6 @@ export async function createReview(values: ReviewFormValues) {
       };
     }
 
-    // Optional: check if staff exists
     const staff = await db.staff.findUnique({
       where: { id: validatedFields.staff_id },
     });
@@ -75,7 +82,6 @@ export async function createReview(values: ReviewFormValues) {
       };
     }
 
-    // Create the review
     await db.rating.create({
       data: {
         patient_id: validatedFields.patient_id,
@@ -92,7 +98,6 @@ export async function createReview(values: ReviewFormValues) {
     };
   } catch (error) {
     console.error("Review error:", error);
-
     return {
       success: false,
       message: "Failed to create review",

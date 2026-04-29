@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
   
@@ -9,6 +7,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum Role{
   Admin
   Doctor
@@ -16,39 +15,52 @@ enum Role{
   Patient
   Lab_technician
   Cashier
-
 }
+
 enum Status{
   Dormant
   Active
   Inactive
 }
+
 enum Jobtype{
   Full
   Part
 }
+
 enum Gender{
   MALE
   FEMALE
 }
+
 enum AppointmentStatus{
   Pending
   Scheduled
   Cancelled
   Completed
 }
+
 enum PaymentMethods{
   Cash
   card
   onlinepayment
+  Mpesa
 }
+
 enum PaymentStatus{
   Paid
   Unpaid
   Part
 }
+
+enum MpesaStatus{
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model Patient{
-  id String @id //clerk user id
+  id String @id
   first_name String
   last_name String
   gender Gender @default(MALE)
@@ -81,9 +93,8 @@ model Patient{
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
   colorCode     String?
-
-
 }
+
 model Doctor{
   id String @id
   email String @unique
@@ -133,8 +144,8 @@ model Staff{
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   colorCode String?
-
 }
+
 model LabTest{
   id Int @id @default(autoincrement())
   record_id Int
@@ -184,12 +195,31 @@ model Payment{
   payment_status PaymentStatus @default(Unpaid)
   reciept_number Int @default(autoincrement())
 
-  appointment Appointment @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
-  patient     Patient @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  bills       PatientBills[]
+  appointment     Appointment @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+  patient         Patient @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  bills           PatientBills[]
+  mpesa_transactions MpesaTransaction[]  // 👈 new relation
 
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+}
+
+// 👇 New model — tracks every STK push attempt
+model MpesaTransaction{
+  id                   Int         @id @default(autoincrement())
+  payment_id           Int
+  checkout_request_id  String      @unique
+  merchant_request_id  String?
+  phone                String
+  amount               Int
+  status               MpesaStatus @default(PENDING)
+  mpesa_receipt        String?     // MpesaReceiptNumber from callback
+  result_desc          String?     // Safaricom result description
+
+  payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model PatientBills{
@@ -244,7 +274,6 @@ model VitalSigns{
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
 }
 
 model Diagnosis{
@@ -262,8 +291,8 @@ model Diagnosis{
   medical MedicalRecords @relation(fields: [medical_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
 }
+
 model AuditLog{
   id Int @id @default(autoincrement())
   user_id String
@@ -272,6 +301,7 @@ model AuditLog{
   details String?
   model String
 }
+
 model Rating{
   id Int @id @default(autoincrement())
   staff_id String
@@ -284,7 +314,6 @@ model Rating{
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
 }
 
 model Services{

@@ -239,7 +239,7 @@ export const PaymentSchema = z.object({
   id: z.string(),
   // patient_id: z.string(),
   // appointment_id: z.string(),
-  bill_date: z.date(),
+  bill_date: z.coerce.date(),
   // payment_date: z.string(),
   discount: z.string({ message: "discount" }),
   total_amount: z.string(),
@@ -259,4 +259,5 @@ export type VitalSignsFormValues = z.infer<typeof VitalSignsSchema>;
 export type DiagnosisFormValues = z.infer<typeof DiagnosisSchema>;
 export type PatientBillFormValues= z.infer<typeof PatientBillSchema>;
 export type ServicesFormValues = z.infer<typeof ServicesSchema>;
-export type PaymentFormType= z.infer<typeof PaymentSchema>
+export type PaymentFormInput = z.input<typeof PaymentSchema>;
+export type PaymentFormOutput = z.output<typeof PaymentSchema>;

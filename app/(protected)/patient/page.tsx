@@ -30,7 +30,7 @@ const PatientsDashboard = async () => {
   const cardData = [
     {
       title: 'appointments',
-      value: totalAppointments,
+      value: totalAppointments ?? 0,
       icon: Briefcase,
       className: 'bg-blue-600/15',
       iconClassName: 'bg-blue-600/25 text-blue-600',
@@ -38,7 +38,7 @@ const PatientsDashboard = async () => {
     },
     {
       title: 'cancelled',
-      value: appointmentCounts?.Cancelled,
+      value: appointmentCounts?.Cancelled ?? 0,
       icon: Briefcase,
       className: 'bg-rose-600/15',
       iconClassName: 'bg-rose-600/25 text-rose-600',
@@ -46,7 +46,9 @@ const PatientsDashboard = async () => {
     },
     {
       title: 'pending',
-      value: appointmentCounts?.Pending + appointmentCounts?.Scheduled,
+      value:
+        (appointmentCounts?.Pending ?? 0) +
+        (appointmentCounts?.Scheduled ?? 0),
       icon: BriefcaseBusiness,
       className: 'bg-yellow-600/15',
       iconClassName: 'bg-yellow-600/25 text-yellow-600',
@@ -54,7 +56,7 @@ const PatientsDashboard = async () => {
     },
     {
       title: 'completed',
-      value: appointmentCounts?.Completed,
+      value: appointmentCounts?.Completed ?? 0,
       icon: BriefcaseMedical,
       className: 'bg-emerald-600/15',
       iconClassName: 'bg-emerald-600/25 text-emerald-600',
@@ -97,15 +99,16 @@ const PatientsDashboard = async () => {
           <div className="bg-white rounded-xl p-4">
             <AvailableDoctors data={availableDoctor as AvailableDoctorProps} />
           </div>
-           <div className="bg-white rounded-xl p-4">
-            <PatientRatingContainer/>
+
+          <div className="bg-white rounded-xl p-4">
+            <PatientRatingContainer />
           </div>
         </div>
       </div>
 
       {/* -------- MIDDLE SECTION (Appointments Chart) -------- */}
-      <div className="bg-white rounded-xl p-4 h-[500px]">
-        <AppointmentChart data={monthlyData} />
+      <div className="bg-white rounded-xl p-4 h-125">
+        <AppointmentChart data={monthlyData!} />
       </div>
 
       {/* -------- BOTTOM SECTION (Recent Appointments) -------- */}

@@ -90,7 +90,7 @@ const DoctorsDashboard = async () => {
           
         </div>
 
-        <div className="h-[500px]">
+        <div className="h-125">
           <AppointmentChart data={monthlyData!}/>
         </div>
 
@@ -102,7 +102,7 @@ const DoctorsDashboard = async () => {
       </div>
        {/*Right*/}
        <div className="w-full xl:w-[30%]">
-        <div className="w-full h-[450px] mb-8">
+        <div className="w-full h-112.5 mb-8">
           <StatSummary data={appointmentCounts} total ={totalAppointments!}/>
 
         </div>

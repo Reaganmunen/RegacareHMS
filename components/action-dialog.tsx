@@ -94,7 +94,7 @@ export const ActionDialog= ({id, data, type, deleteType}: ActionDialogProps) => 
                  View
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[300px] md:max-w-2xl max-h-[90%] p-8 overflow-y-auto">
+            <DialogContent className="max-w-75 md:max-w-2xl max-h-[90%] p-8 overflow-y-auto">
                 
                 <DialogTitle className="text-lg text-gray-600 font-semibold mb-4">
                     Staff Information

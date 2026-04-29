@@ -44,7 +44,7 @@ const PatientProfile = async (props: ParamsProps) => {
         {/* Profile and Info Cards */}
         <div className="w-full flex flex-col lg:flex-row gap-4">
           {/* Profile Card */}
-          <Card className="bg-white rounded-xl p-4 w-full max-w-[250px] border-none flex flex-col items-center text-center shadow-sm">
+          <Card className="bg-white rounded-xl p-4 w-full max-w-62.5 border-none flex flex-col items-center text-center shadow-sm">
             <ProfileImage
               url={data?.img!}
               name={data?.first_name + ' ' + data?.last_name}

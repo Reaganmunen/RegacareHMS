@@ -25,7 +25,7 @@ export const MedicalHistoryDialog = async ({
                     {label}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90%] max-w-[425px] md:max-w-2xl 2xl:max-w-4xl p-8 overflow-y-auto">
+            <DialogContent className="max-h-[90%] max-w-[90vw] md:max-w-5xl p-8 overflow-y-auto">
                 {<DiagnosisContainer
                 id= {String(id)}
                 patientId ={patientId!}
