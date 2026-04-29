@@ -83,7 +83,7 @@ export const DiagnosisContainer = async ({
   const addDiagnosisProps = {
     patientId,
     doctorId,
-    appointmentId: Number(id),
+    appointmentId: id,
     medicalId: data?.id?.toString() ?? "",
     patient: patientInfo,
   };
